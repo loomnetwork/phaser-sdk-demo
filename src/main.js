@@ -1,19 +1,20 @@
 import 'pixi'
 import 'p2'
 import * as Phaser from 'phaser'
+
 import MainState from './states/Main'
+import config from './config'
+
 
 class Game extends Phaser.Game {
 
   constructor () {
 
-    const width = 800
-    const height = 600
-
-    super(width, height, Phaser.AUTO, '', null)
-
+    super(config)
+        
     this.state.add('Main', MainState, false)
-    
+
+
   }
 
 }
