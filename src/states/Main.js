@@ -15,6 +15,7 @@ export default class extends Phaser.State {
     this.score = 0
     this.gameOver = false
     this.scoreText
+    this.contract = new SimpleContract()
   }
 
   preload() {
@@ -118,19 +119,24 @@ export default class extends Phaser.State {
 
     this.score += 10
     this.scoreText.text = 'Score: ' + this.score
-    
-    const contract = new SimpleContract()
+        
     const stringScore = this.score.toString() 
 
     // Wtite to Blockchain
-    contract.store('score', stringScore)
-
-    // Read from Blockchain
-    contract.load('score').then(function(results) {
+    this.contract.store('score', stringScore).then(function(results) {
       console.log("Promise Resolved", results);
     }).catch(function(error) {
       console.log("Promise Rejected", error);
     });
+
+    // Read from Blockchain
+    setTimeout(function(){      
+      this.contract.load('score').then(function(results) {
+        console.log("Promise Resolved", results);
+      }).catch(function(error) {
+        console.log("Promise Rejected", error);
+      });
+     }, 2000);
 
 
   }

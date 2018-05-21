@@ -6,13 +6,12 @@ import {
 import { MapEntry } from './assets/protobuff/setscore_pb'
 
 
-class SimpleContract {
+class SimpleContract extends Contract {
 
   constructor () {
 
-	  this.privateKey = CryptoUtils.generatePrivateKey()
-  	this.publicKey = CryptoUtils.publicKeyFromPrivateKey(this.privateKey)  
-
+	  const privateKey = CryptoUtils.generatePrivateKey()
+  	const publicKey = CryptoUtils.publicKeyFromPrivateKey(privateKey)
 	  const client = new Client(
 	    'default',
 	    'ws://127.0.0.1:46657/websocket',
@@ -20,8 +19,8 @@ class SimpleContract {
 	  )
 
 	  client.txMiddleware = [
-	    new NonceTxMiddleware(this.publicKey, client),
-	    new SignedTxMiddleware(this.privateKey)
+	    new NonceTxMiddleware(publicKey, client),
+	    new SignedTxMiddleware(privateKey)
 	  ]
 
 	  const contractAddr = new Address(
@@ -29,13 +28,9 @@ class SimpleContract {
 	    LocalAddress.fromHexString('0x005B17864f3adbF53b1384F2E6f2120c6652F779')
 	  )
 
-	  const callerAddr = new Address(client.chainId, LocalAddress.fromPublicKey(this.publicKey))
+	  const callerAddr = new Address(client.chainId, LocalAddress.fromPublicKey(publicKey))
 
-    this.contract = new Contract({
-	    contractAddr,
-	    callerAddr,
-	    client
-	  })
+		super({contractAddr, callerAddr, client})	
 
   }
 
@@ -43,13 +38,13 @@ class SimpleContract {
 	  const params = new MapEntry()
 	  params.setKey(key)
 	  params.setValue(value)
-	  await this.contract.callAsync('SetMsg', params)
+	  await this.callAsync('SetMsg', params)
 	}
 
 	async load(key) {
 	  const params = new MapEntry()
 	  params.setKey(key)
-	  const result = await this.contract.staticCallAsync('GetMsg', params, new MapEntry())	 
+	  const result = await this.staticCallAsync('GetMsg', params, new MapEntry())	 
 	  return result.getValue()
 	}
 
