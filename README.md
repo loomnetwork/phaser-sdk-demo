@@ -1,7 +1,8 @@
-# PHASER SDK DEMO
+# PHASER SDK DEMO 
 
-A basic example showcasing a simple HTML5 game interacting with a Loom DappChain, using [Phaser](http://phaser.io) and  [Loom.js](https://github.com/loomnetwork/loom-js).
+A basic example showcasing a simple HTML5 game :video_game: interacting with a Loom DappChain, using [Phaser](http://phaser.io) and  [Loom.js](https://github.com/loomnetwork/loom-js).
 
+Please consult the [Loom SDK docs](https://loomx.io/developers/docs/en/prereqs.html) for instruction on running your own DappChain.
 
 Run dev server
 
@@ -20,7 +21,6 @@ yarn run proto
 # Yarn
 npm run proto
 ```
-
 
 Loom Network
 ----
