@@ -123,21 +123,16 @@ export default class extends Phaser.State {
     const stringScore = this.score.toString() 
 
     // Wtite to Blockchain
-    this.contract.store('score', stringScore).then(function(results) {
-      console.log("Promise Resolved", results);
-    }).catch(function(error) {
-      console.log("Promise Rejected", error);
-    });
+    this.contract.store('score', stringScore);
 
     // Read from Blockchain
-    setTimeout(function(){      
+    setTimeout(() => {      
       this.contract.load('score').then(function(results) {
         console.log("Promise Resolved", results);
       }).catch(function(error) {
         console.log("Promise Rejected", error);
       });
-     }, 2000);
-
+     }, 1000);
 
   }
 
