@@ -1,5 +1,6 @@
 /* globals __DEV__ */
 import Phaser from 'phaser'
+import SimpleContract from '../blockchain'
 
 export default class extends Phaser.State {
 
@@ -16,8 +17,7 @@ export default class extends Phaser.State {
     this.scoreText
   }
 
-  preload() {    
-
+  preload() {
     this.load.image('sky', 'src/assets/sky.png')
     this.load.image('ground', 'src/assets/platform.png')
     this.load.image('star', 'src/assets/star.png')
@@ -113,12 +113,31 @@ export default class extends Phaser.State {
   }
 
   collectStar(player, star) {
-
-    console.log("Write to Blockchain")
+    
     star.kill()
 
     this.score += 10
     this.scoreText.text = 'Score: ' + this.score
+
+    // Write to Blockchain
+    const contract = new SimpleContract()
+
+    const stringScore = this.score.toString() 
+    contract.store('score', stringScore)
+
+
+    setTimeout(function(){  
+
+      contract.load('score').then(function(results) {
+        console.log("Promise Resolved", results);
+      }).catch(function(error) {
+        console.log("Promise Rejected", error);
+      });
+
+
+    }, 3000);
+
+
 
   }
 
