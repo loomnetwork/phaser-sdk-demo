@@ -58,9 +58,9 @@ export default class extends Phaser.State {
 
     for (var i = 0; i < 12; i++)
     {
-        let star = this.stars.create(i * 70, 0, 'star')
-        star.body.gravity.y = 300
-        star.body.bounce.y = 0.7 + Math.random() * 0.2
+      let star = this.stars.create(i * 70, 0, 'star')
+      star.body.gravity.y = 300
+      star.body.bounce.y = 0.7 + Math.random() * 0.2
     }
 
     this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
@@ -90,23 +90,23 @@ export default class extends Phaser.State {
 
     if (this.cursors.left.isDown)
     {
-        this.player.body.velocity.x = -150
-        this.player.animations.play('left')
+      this.player.body.velocity.x = -150
+      this.player.animations.play('left')
     }
     else if (this.cursors.right.isDown)
     {
-        this.player.body.velocity.x = 150
-        this.player.animations.play('right')
+      this.player.body.velocity.x = 150
+      this.player.animations.play('right')
     }
     else
     {
-        this.player.animations.stop()
-        this.player.frame = 4
+      this.player.animations.stop()
+      this.player.frame = 4
     }
 
     if (this.cursors.up.isDown && this.player.body.touching.down && hitPlatform)
     {
-        this.player.body.velocity.y = -350
+      this.player.body.velocity.y = -350
     }
 
 
@@ -118,29 +118,22 @@ export default class extends Phaser.State {
 
     this.score += 10
     this.scoreText.text = 'Score: ' + this.score
-
-    // Write to Blockchain
+    
     const contract = new SimpleContract()
-
     const stringScore = this.score.toString() 
+
+    // Wtite to Blockchain
     contract.store('score', stringScore)
 
-
-    setTimeout(function(){  
-
-      contract.load('score').then(function(results) {
-        console.log("Promise Resolved", results);
-      }).catch(function(error) {
-        console.log("Promise Rejected", error);
-      });
-
-
-    }, 3000);
-
+    // Read from Blockchain
+    contract.load('score').then(function(results) {
+      console.log("Promise Resolved", results);
+    }).catch(function(error) {
+      console.log("Promise Rejected", error);
+    });
 
 
   }
-
 
 
   render() {    
