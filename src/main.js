@@ -2,19 +2,19 @@ import 'pixi'
 import 'p2'
 import * as Phaser from 'phaser'
 
-import MainState from './states/Main'
+import GameState from './states/Game'
 import config from './config'
 
 class Game extends Phaser.Game {
 
   constructor () {
     super(config)
-    this.state.add('Main', MainState, false)
+    this.state.add('Game', GameState, false)
   }
 
 }
 
 window.onload = () => {
   const game = new Game()
-  game.state.start('Main')
+  game.state.start('Game')
 }
