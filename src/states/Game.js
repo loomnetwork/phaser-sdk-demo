@@ -9,10 +9,13 @@ export default class extends Phaser.State {
     this.stars
     this.bombs
     this.platforms
+    this.spacing = this.world.height
     this.ground
     this.ledge
     this.cursors
     this.score = 0
+    this.block
+    this.isRunning = false
     this.gameOver = false
     this.scoreText
     this.contract = new SimpleContract()
@@ -23,60 +26,53 @@ export default class extends Phaser.State {
     this.load.image('ground', 'src/assets/platform.png')
     this.load.image('star', 'src/assets/star.png')
     this.load.image('bomb', 'src/assets/bomb.png')
+    this.load.image('block', 'src/assets/block.png')
     this.load.spritesheet('dude', 'src/assets/dude.png', 32, 48)
-    let text = this.add.text(this.world.centerX, this.world.centerY, 'loading fonts', { font: '16px Arial', fill: '#ffffff', align: 'center' })
   }
 
   create() {
 
+    // Enable Arcade physics
     this.physics.startSystem(Phaser.Physics.ARCADE)
 
-    this.add.sprite(0, 0, 'sky')
+    // Get the dimensions of the block we are using
+    this.tileWidth = this.cache.getImage('block').width
+    this.tileHeight = this.cache.getImage('block').height
+
+    // Set the background colour
+    this.stage.backgroundColor = 'AAB7FF'    
 
     this.platforms = this.add.group()
     this.platforms.enableBody = true
+    this.platforms.createMultiple(250, 'block')
 
-    this.ground = this.platforms.create(0, this.world.height - 64, 'ground')
-    this.ground.scale.setTo(2, 2)
-    this.ground.body.immovable = true
+    this.ground = this.platforms.create(this.world.width/2 - 35, this.world.height/2, 'block')
+    this.ground.body.immovable = true    
 
-    this.ledge = this.platforms.create(400, 400, 'ground')
-    this.ledge.body.immovable = true;
+    // this.stars = this.add.group()
+    // this.stars.enableBody = true
 
-    this.ledge = this.platforms.create(-150, 250, 'ground')
-    this.ledge.body.immovable = true
+    // for (var i = 0; i < 12; i++)
+    // {
+    //   let star = this.stars.create(i * 70, 0, 'star')
+    //   star.body.gravity.y = 300
+    //   star.body.bounce.y = 0.7 + Math.random() * 0.2
+    // }
 
-    this.player = this.add.sprite(32, this.world.height - 150, 'dude')
-    this.physics.arcade.enable(this.player)
-    this.player.body.bounce.y = 0.2
-    this.player.body.gravity.y = 300
-    this.player.body.collideWorldBounds = true
-    this.player.animations.add('left', [0, 1, 2, 3], 10, true)
-    this.player.animations.add('right', [5, 6, 7, 8], 10, true);   
+    // Create the player character
+    this.initPlayer()
 
-    this.stars = this.add.group()
-    this.stars.enableBody = true
+    // Create inital platforms
+    this.initPlatforms()
 
-    for (var i = 0; i < 12; i++)
-    {
-      let star = this.stars.create(i * 70, 0, 'star')
-      star.body.gravity.y = 300
-      star.body.bounce.y = 0.7 + Math.random() * 0.2
-    }
+    //Create the score label
+    this.createScore()
 
-    this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+    // Create a platform every 2 seconds
+    // this.timer = this.time.events.loop(2000, this.addPlatform, this)
 
+    // Enable cursor keys for controls
     this.cursors = this.input.keyboard.createCursorKeys()
-
-    const bannerText = 'Phaser + Loom Dappchain'
-    let banner = this.add.text(this.world.centerX, this.game.height - 80, bannerText, {
-      font: '40px Bangers',
-      fill: '#77BFA3',
-      smoothed: false
-    })
-
-    banner.padding.set(10, 16)
-    banner.anchor.setTo(0.5)
 
   }
 
@@ -88,6 +84,13 @@ export default class extends Phaser.State {
     this.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this)
 
     this.player.body.velocity.x = 0
+
+
+    if(!this.isRunning && this.cursors.up.isDown)
+    {
+      this.startGame()
+      this.isRunning = true
+    }
 
     if (this.cursors.left.isDown)
     {
@@ -113,26 +116,93 @@ export default class extends Phaser.State {
 
   }
 
-  collectStar(player, star) {
-    
-    star.kill()
 
-    this.score += 10
-    this.scoreText.text = 'Score: ' + this.score
-        
-    const stringScore = this.score.toString() 
+  startGame() {
+    // Create a platform every 2 seconds
+    this.timer = this.time.events.loop(2000, this.addPlatform, this)
+    this.ground.body.velocity.y = 150
+  }
 
-    // Wtite to Blockchain
-    this.contract.store('score', stringScore);
+  gameOver() {
+    this.state.start('Main')
+  }
 
-    // Read from Blockchain
-    setTimeout(() => {      
-      this.contract.load('score').then(function(results) {
-        console.log("Promise Resolved", results);
-      }).catch(function(error) {
-        console.log("Promise Rejected", error);
-      });
-     }, 1000);
+  addTile(x, y) {
+
+    let block = this.platforms.getFirstDead()
+
+    //Reset it to the specified coordinates
+    block.reset(x, y)
+    block.body.velocity.y = 150
+    block.body.immovable = true
+
+    //When the tile leaves the screen, kill it
+    block.checkWorldBounds = true
+    block.outOfBoundsKill = true  
+  }
+
+  addPlatform(y){
+
+    if(typeof(y) == "undefined"){
+      y = -this.tileHeight
+      //Increase the players score
+      this.incrementScore()
+    }
+
+    //Work out how many tiles we need to fit across the whole screen
+    let tilesNeeded = Math.ceil(this.world.width / this.tileWidth)
+
+    //Add a hole randomly somewhere
+    let hole = Math.floor(Math.random() * (tilesNeeded - 2)) + 1
+
+    //Keep creating tiles next to each other until we have an entire row
+    //Don't add tiles where the random hole is
+    for (var i = 0; i < tilesNeeded; i++){
+        if (i != hole && i != hole + 1){
+          this.addTile(i * this.tileWidth, y) 
+        }         
+    }
+
+  }
+
+  initPlayer() {    
+
+    const playerHeight = this.cache.getImage('dude').height
+    this.player = this.add.sprite(this.world.centerX, this.world.centerY - playerHeight, 'dude')
+    this.physics.arcade.enable(this.player)
+    this.player.body.bounce.y = 0.2
+    this.player.body.gravity.y = 300
+    this.player.body.collideWorldBounds = true
+    this.player.animations.add('left', [0, 1, 2, 3], 10, true)
+    this.player.animations.add('right', [5, 6, 7, 8], 10, true);       
+  }
+
+  initPlatforms(){
+
+    const bottom = this.world.height - this.tileHeight
+    const top = this.tileHeight
+
+    //Keep creating platforms until they reach (near) the top of the screen
+    for(var y = bottom; y > top - this.tileHeight; y = y - this.spacing){
+      this.addPlatform(y)
+    }
+
+  }
+
+  createScore(){
+
+    let scoreFont = "100px Arial"
+
+    this.scoreLabel = this.add.text((this.world.centerX), 100, "0", {font: scoreFont, fill: "#fff"}) 
+    this.scoreLabel.anchor.setTo(0.5, 0.5)
+    this.scoreLabel.align = 'center'
+
+  }
+
+  incrementScore(){
+
+    this.score += 1   
+    this.scoreLabel.text = this.score    
 
   }
 
