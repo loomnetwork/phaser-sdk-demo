@@ -20,6 +20,7 @@ export default class extends Phaser.State {
 
     this.createScore()
 
+    // Read from the Blockchain (please see SimpleContract.js)
 		this.contract.load('score').then((results) => {
 		  this.scoreLabel.text = "Your score is " + results + "\n Press enter to try again"
 		}).catch((error) => {

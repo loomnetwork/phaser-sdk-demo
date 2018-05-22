@@ -40,23 +40,19 @@ export default class extends Phaser.State {
     // Set the background colour
     this.add.sprite(0, 0, 'sky')
 
+    // Create a group for solid objects
     this.platforms = this.add.group()
+
+    // Enable physics on any object within the group
     this.platforms.enableBody = true
     this.platforms.createMultiple(250, 'block')
 
-    this.stars = this.add.group()
-    this.stars.enableBody = true
-
-    // Create the player character
+    this.initStars() 
     this.initPlayer()
-
-    // Create inital platforms
     this.initPlatforms()
-
-    //Create the score label
     this.createScore()
 
-    // Create a platform every 2 seconds
+    // Create events that will fire every x milliseconds
     this.time.events.loop(2000, this.addPlatform, this)
     this.time.events.loop(10000, this.addStars, this)
 
@@ -66,12 +62,9 @@ export default class extends Phaser.State {
   }
 
   update() {
-
     let hitPlatform = this.physics.arcade.collide(this.player, this.platforms)
-
     this.physics.arcade.collide(this.stars, this.platforms)
     this.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this)
-
     this.player.body.velocity.x = 0
 
     if(!this.isRunning && this.cursors.up.isDown)
@@ -114,15 +107,10 @@ export default class extends Phaser.State {
   }
 
   addBlock(x, y) {
-
     let block = this.platforms.getFirstDead()
-
-    //Reset it to the specified coordinates
     block.reset(x, y)
     block.body.velocity.y = 150
     block.body.immovable = true
-
-    //When the tile leaves the screen, kill it
     block.checkWorldBounds = true
     block.outOfBoundsKill = true  
   }
@@ -131,7 +119,6 @@ export default class extends Phaser.State {
 
     if(typeof(y) == "undefined"){
       y = -this.blockHeight
-
       this.incrementScore(1)
     }
 
@@ -156,8 +143,12 @@ export default class extends Phaser.State {
     }
   }
 
-  initPlayer() {    
+  initStars() {
+    this.stars = this.add.group()
+    this.stars.enableBody = true
+  }
 
+  initPlayer() {    
     const playerHeight = this.cache.getImage('dude').height
     this.player = this.add.sprite(this.blockWidth * 1, this.world.centerY - playerHeight, 'dude')
     this.physics.arcade.enable(this.player)
@@ -170,21 +161,15 @@ export default class extends Phaser.State {
   }
 
   initPlatforms(){
-
     const bottom = this.world.height - this.blockHeight
-    const top = this.blockHeight
-
-    //Keep creating platforms until they reach (near) the top of the screen
+    const top = this.blockHeight    
     for(var y = bottom; y > top - this.blockHeight; y = y - this.spacing){
       this.addPlatform(y)
     }
-
   }
 
   createScore(){
-
     let scoreFont = "100px Arial"
-
     this.scoreLabel = this.add.text((this.world.centerX), 100, "0", {font: scoreFont, fill: "#fff"}) 
     this.scoreLabel.anchor.setTo(0.5, 0.5)
     this.scoreLabel.align = 'center'
@@ -192,25 +177,18 @@ export default class extends Phaser.State {
   }
 
   incrementScore(value) {
-
     this.score += value
     this.scoreLabel.text = this.score
+    const stringScore = this.score.toString()
 
-    const stringScore = this.score.toString() 
-
-    // Write to Blockchain
-    this.contract.store('score', stringScore);    
-
+    // Write to the Blockchain (please see SimpleContract.js)
+    this.contract.store('score', stringScore)
   }
 
-
-  collectStar(player, star) {
-    
+  collectStar(player, star) { 
     star.kill()
     this.incrementScore(10)
-
   }
-
 
   render() {    
   }

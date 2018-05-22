@@ -5,7 +5,6 @@ import {
 
 import { MapEntry } from './assets/protobuff/setscore_pb'
 
-
 class SimpleContract extends Contract {
 
   constructor () {
