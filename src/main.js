@@ -4,12 +4,11 @@ import * as Phaser from 'phaser'
 
 import GameState from './states/Game'
 import ScoreBoard  from './states/ScoreBoard'
-import config from './config'
 
 class Game extends Phaser.Game {
 
   constructor () {
-    super(config)
+    super(400, 700, Phaser.CANVAS, 'content', null)
     this.state.add('Game', GameState, false)
     this.state.add('ScoreBoard', ScoreBoard, false)
   }
