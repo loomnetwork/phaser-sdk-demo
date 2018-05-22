@@ -1,6 +1,6 @@
-# PHASER SDK DEMO :dizzy:
+# PHASER SDK DEMO :crystal_ball: :dizzy:
 
-[![Game screenshot](/src/assets/screenshot.png)]
+![Game screenshot](/src/assets/screenshot.png)
 
 A basic example showcasing a simple HTML5 game interacting with a Loom DappChain, using [Phaser](http://phaser.io) and [Loom.js](https://github.com/loomnetwork/loom-js).
 
@@ -19,7 +19,7 @@ Development
 Install Loom
 
 ```
-wget https://storage.googleapis.com/private.delegatecall.com/loom/osx/build-127/loom
+wget https://storage.googleapis.com/private.delegatecall.com/loom/osx/build-128/loom
 chmod +x loom
 
 mkdir tmpgopath
