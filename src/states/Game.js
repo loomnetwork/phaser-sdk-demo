@@ -9,14 +9,12 @@ export default class extends Phaser.State {
     this.stars
     this.bombs
     this.platforms
-    this.spacing = this.world.height
+    this.spacing = 300
     this.ground
     this.ledge
     this.cursors
     this.score = 0
     this.block
-    this.isRunning = false
-    this.gameOver = false
     this.scoreText
     this.contract = new SimpleContract()
   }
@@ -36,28 +34,18 @@ export default class extends Phaser.State {
     this.physics.startSystem(Phaser.Physics.ARCADE)
 
     // Get the dimensions of the block we are using
-    this.tileWidth = this.cache.getImage('block').width
-    this.tileHeight = this.cache.getImage('block').height
+    this.blockWidth = this.cache.getImage('block').width
+    this.blockHeight = this.cache.getImage('block').height
 
     // Set the background colour
-    this.stage.backgroundColor = 'AAB7FF'    
+    this.add.sprite(0, 0, 'sky')
 
     this.platforms = this.add.group()
     this.platforms.enableBody = true
     this.platforms.createMultiple(250, 'block')
 
-    this.ground = this.platforms.create(this.world.width/2 - 35, this.world.height/2, 'block')
-    this.ground.body.immovable = true    
-
-    // this.stars = this.add.group()
-    // this.stars.enableBody = true
-
-    // for (var i = 0; i < 12; i++)
-    // {
-    //   let star = this.stars.create(i * 70, 0, 'star')
-    //   star.body.gravity.y = 300
-    //   star.body.bounce.y = 0.7 + Math.random() * 0.2
-    // }
+    this.stars = this.add.group()
+    this.stars.enableBody = true
 
     // Create the player character
     this.initPlayer()
@@ -69,7 +57,8 @@ export default class extends Phaser.State {
     this.createScore()
 
     // Create a platform every 2 seconds
-    // this.timer = this.time.events.loop(2000, this.addPlatform, this)
+    this.time.events.loop(2000, this.addPlatform, this)
+    this.time.events.loop(10000, this.addStars, this)
 
     // Enable cursor keys for controls
     this.cursors = this.input.keyboard.createCursorKeys()
@@ -85,19 +74,17 @@ export default class extends Phaser.State {
 
     this.player.body.velocity.x = 0
 
-
     if(!this.isRunning && this.cursors.up.isDown)
     {
-      this.startGame()
       this.isRunning = true
     }
 
-    if (this.cursors.left.isDown)
+    if(this.cursors.left.isDown)
     {
       this.player.body.velocity.x = -150
       this.player.animations.play('left')
     }
-    else if (this.cursors.right.isDown)
+    else if(this.cursors.right.isDown)
     {
       this.player.body.velocity.x = 150
       this.player.animations.play('right')
@@ -108,26 +95,25 @@ export default class extends Phaser.State {
       this.player.frame = 4
     }
 
-    if (this.cursors.up.isDown && this.player.body.touching.down && hitPlatform)
+    if(this.cursors.up.isDown && this.player.body.touching.down && hitPlatform)
     {
-      this.player.body.velocity.y = -350
+      this.player.body.velocity.y = -450
     }
 
+    if(this.cursors.down.isDown && !this.player.body.touching.down && !hitPlatform)
+    {
+      this.player.body.velocity.y = 700
+    }
 
-  }
+    if(this.player.y > this.world.height) this.gameOver()
 
-
-  startGame() {
-    // Create a platform every 2 seconds
-    this.timer = this.time.events.loop(2000, this.addPlatform, this)
-    this.ground.body.velocity.y = 150
   }
 
   gameOver() {
-    this.state.start('Main')
+    this.state.start('ScoreBoard')
   }
 
-  addTile(x, y) {
+  addBlock(x, y) {
 
     let block = this.platforms.getFirstDead()
 
@@ -144,46 +130,52 @@ export default class extends Phaser.State {
   addPlatform(y){
 
     if(typeof(y) == "undefined"){
-      y = -this.tileHeight
-      //Increase the players score
-      this.incrementScore()
+      y = -this.blockHeight
+
+      this.incrementScore(1)
     }
 
-    //Work out how many tiles we need to fit across the whole screen
-    let tilesNeeded = Math.ceil(this.world.width / this.tileWidth)
+    let blocksNeeded = Math.ceil(this.world.width / this.blockWidth)
 
-    //Add a hole randomly somewhere
-    let hole = Math.floor(Math.random() * (tilesNeeded - 2)) + 1
+    let hole = Math.floor(Math.random() * (blocksNeeded - 2)) + 1
 
-    //Keep creating tiles next to each other until we have an entire row
-    //Don't add tiles where the random hole is
-    for (var i = 0; i < tilesNeeded; i++){
-        if (i != hole && i != hole + 1){
-          this.addTile(i * this.tileWidth, y) 
-        }         
+    for (var i = 0; i < blocksNeeded; i++){
+      if (i != hole && i != hole + 1){
+        this.addBlock(i * this.blockWidth, y) 
+      }         
     }
 
+  }
+
+  addStars() {
+    for(var i = 0; i < 12; i++)
+    {
+      let star = this.stars.create(i * 70, 0, 'star')
+      star.body.gravity.y = 300
+      star.body.bounce.y = 0.7 + Math.random() * 0.2
+    }
   }
 
   initPlayer() {    
 
     const playerHeight = this.cache.getImage('dude').height
-    this.player = this.add.sprite(this.world.centerX, this.world.centerY - playerHeight, 'dude')
+    this.player = this.add.sprite(this.blockWidth * 1, this.world.centerY - playerHeight, 'dude')
     this.physics.arcade.enable(this.player)
-    this.player.body.bounce.y = 0.2
-    this.player.body.gravity.y = 300
-    this.player.body.collideWorldBounds = true
+    this.player.body.bounce.y = 0.1
+    this.player.body.gravity.y = 400
+
+    this.player.body.collideWorldBounds = false
     this.player.animations.add('left', [0, 1, 2, 3], 10, true)
     this.player.animations.add('right', [5, 6, 7, 8], 10, true);       
   }
 
   initPlatforms(){
 
-    const bottom = this.world.height - this.tileHeight
-    const top = this.tileHeight
+    const bottom = this.world.height - this.blockHeight
+    const top = this.blockHeight
 
     //Keep creating platforms until they reach (near) the top of the screen
-    for(var y = bottom; y > top - this.tileHeight; y = y - this.spacing){
+    for(var y = bottom; y > top - this.blockHeight; y = y - this.spacing){
       this.addPlatform(y)
     }
 
@@ -199,10 +191,23 @@ export default class extends Phaser.State {
 
   }
 
-  incrementScore(){
+  incrementScore(value) {
 
-    this.score += 1   
-    this.scoreLabel.text = this.score    
+    this.score += value
+    this.scoreLabel.text = this.score
+
+    const stringScore = this.score.toString() 
+
+    // Write to Blockchain
+    this.contract.store('score', stringScore);    
+
+  }
+
+
+  collectStar(player, star) {
+    
+    star.kill()
+    this.incrementScore(10)
 
   }
 
