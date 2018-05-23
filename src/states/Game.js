@@ -1,6 +1,6 @@
 /* globals __DEV__ */
 import Phaser from 'phaser'
-import SimpleContract from '../SimpleContract'
+import createContract from '../simpleContract'
 
 export default class extends Phaser.State {
 
@@ -15,8 +15,7 @@ export default class extends Phaser.State {
     this.cursors
     this.score = 0
     this.block
-    this.scoreText
-    this.contract = new SimpleContract()
+    this.scoreText    
   }
 
   preload() {
@@ -143,6 +142,7 @@ export default class extends Phaser.State {
     }
   }
 
+
   initStars() {
     this.stars = this.add.group()
     this.stars.enableBody = true
@@ -173,16 +173,15 @@ export default class extends Phaser.State {
     this.scoreLabel = this.add.text((this.world.centerX), 100, "0", {font: scoreFont, fill: "#fff"}) 
     this.scoreLabel.anchor.setTo(0.5, 0.5)
     this.scoreLabel.align = 'center'
-
   }
 
   incrementScore(value) {
     this.score += value
     this.scoreLabel.text = this.score
     const stringScore = this.score.toString()
-
+    
     // Write to the Blockchain (please see SimpleContract.js)
-    this.contract.store('score', stringScore)
+    this.game.contract.store('score', stringScore)
   }
 
   collectStar(player, star) { 
