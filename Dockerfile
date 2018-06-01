@@ -16,6 +16,6 @@ RUN buildDeps='unzip' \
   && rm protoc-${PROTOBUF_VERSION}-linux-x86_64.zip \
   && apt-get purge -y --auto-remove $buildDeps \
   && yarn && yarn run proto \
-  && sed -ie "s/127\.0\.0\.1/'+location.hostname+'/g" src/simpleContract.js
+  && sed -ie "s/127\.0\.0\.1/'+location.hostname+'/g" src/SimpleContract.js
 
 CMD ["yarn", "run", "dev"]

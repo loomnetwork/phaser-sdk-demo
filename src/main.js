@@ -1,7 +1,7 @@
 import 'pixi'
 import 'p2'
 import * as Phaser from 'phaser'
-import createContract from './simpleContract'
+import createContract from './SimpleContract'
 import GameState from './states/Game'
 import ScoreBoard  from './states/ScoreBoard'
 

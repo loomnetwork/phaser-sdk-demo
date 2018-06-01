@@ -1,6 +1,6 @@
 /* globals __DEV__ */
 import Phaser from 'phaser'
-import createContract from '../simpleContract'
+import createContract from '../SimpleContract'
 
 export default class extends Phaser.State {
 
